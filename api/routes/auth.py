@@ -7,13 +7,16 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from jose import jwt, JWTError
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from api.database import get_db, settings
 from api.models import RegisterRequest, OTPVerifyRequest, TokenResponse
 
 router = APIRouter(prefix="/auth", tags=["auth"])
+security = HTTPBearer()
 
 # In-memory OTP store — fine for portfolio demo
-# In production this would be Redis with TTL
 _otp_store: dict[str, dict] = {}
 
 
@@ -29,6 +32,30 @@ def _create_token(user_id: str) -> str:
     expire = datetime.utcnow() + timedelta(days=7)
     payload = {"sub": user_id, "exp": expire}
     return jwt.encode(payload, settings.secret_key, algorithm="HS256")
+
+
+async def get_current_user(
+    credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+) -> dict:
+    """Dependency — validates JWT and returns user payload."""
+    try:
+        payload = jwt.decode(
+            credentials.credentials,
+            settings.secret_key,
+            algorithms=["HS256"],
+        )
+        user_id = payload.get("sub")
+        if not user_id:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token",
+            )
+        return {"user_id": user_id}
+    except JWTError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired token",
+        )
 
 
 @router.post("/register", status_code=200)
@@ -135,30 +162,3 @@ async def verify_otp(
         access_token=token,
         user_id=user.user_id,
     )
-
-
-security = HTTPBearer()
-
-
-async def get_current_user(
-    credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
-) -> dict:
-    """Dependency — validates JWT and returns user payload."""
-    try:
-        payload = jwt.decode(
-            credentials.credentials,
-            settings.secret_key,
-            algorithms=["HS256"],
-        )
-        user_id = payload.get("sub")
-        if not user_id:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid token",
-            )
-        return {"user_id": user_id}
-    except JWTError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or expired token",
-        )

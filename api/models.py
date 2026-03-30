@@ -160,8 +160,7 @@ class MatchResponse(BaseModel):
     matched_at:      datetime
     chat_channel_id: Optional[UUID]
 
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True}
 
 
 # ── Chat ──────────────────────────────────────────────────────────────────────
