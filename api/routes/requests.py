@@ -239,3 +239,16 @@ async def my_history(
             for r in rows
         ],
     }
+
+@router.post("/parse")
+async def parse_request_text(
+    text: str,
+    current_user: Annotated[dict, Depends(get_current_user)],
+):
+    """
+    Parse a natural language blood request.
+    Demo endpoint — shows the NLP extraction pipeline.
+    """
+    from nlp.parser import parse_blood_request
+    result = await parse_blood_request(text)
+    return result
