@@ -1,0 +1,34 @@
+# Environment
+.env
+*.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+dist/
+build/
+
+# Models (too large for git)
+*.pkl
+*.joblib
+*.pt
+*.bin
+nlp/models/
+ml/models/
+
+# Data (synthetic, regenerated)
+data/synthetic/
+
+# IDE
+.vscode/settings.json
+.idea/
+
+# Docker
+pgdata/
+
+# OS
+.DS_Store
+Thumbs.db
