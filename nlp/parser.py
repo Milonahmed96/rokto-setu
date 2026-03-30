@@ -22,20 +22,20 @@ import anthropic
 # ── Quick regex pre-pass ──────────────────────────────────────────────────────
 
 BLOOD_GROUP_PATTERNS = {
-    "O-":  [r"\bO[\s\-]?(?:negative|neg|নেগেটিভ|-)\b", r"\bO-\b"],
-    "O+":  [r"\bO[\s\-]?(?:positive|pos|পজিটিভ|\+)\b", r"\bO\+\b"],
-    "A-":  [r"\bA[\s\-]?(?:negative|neg|-)\b", r"\bA-\b"],
-    "A+":  [r"\bA[\s\-]?(?:positive|pos|\+)\b", r"\bA\+\b"],
-    "B-":  [r"\bB[\s\-]?(?:negative|neg|-)\b", r"\bB-\b"],
-    "B+":  [r"\bB[\s\-]?(?:positive|pos|\+)\b", r"\bB\+\b"],
-    "AB-": [r"\bAB[\s\-]?(?:negative|neg|-)\b", r"\bAB-\b"],
-    "AB+": [r"\bAB[\s\-]?(?:positive|pos|\+)\b", r"\bAB\+\b"],
+    "O-":  [r"O\s*[-–]\s*(?:\b|$)", r"O\s*negative", r"O\s*neg\b"],
+    "O+":  [r"O\s*[+]\s*(?:\b|$)", r"O\s*positive", r"O\s*pos\b"],
+    "A-":  [r"(?<![AB])\bA\s*[-–]", r"(?<![AB])\bA\s*negative", r"(?<![AB])\bA\s*neg\b"],
+    "A+":  [r"(?<![AB])\bA\s*[+]", r"(?<![AB])\bA\s*positive", r"(?<![AB])\bA\s*pos\b"],
+    "B-":  [r"(?<!A)\bB\s*[-–]", r"(?<!A)\bB\s*negative", r"(?<!A)\bB\s*neg\b"],
+    "B+":  [r"(?<!A)\bB\s*[+]", r"(?<!A)\bB\s*positive", r"(?<!A)\bB\s*pos\b"],
+    "AB-": [r"\bAB\s*[-–]", r"\bAB\s*negative", r"\bAB\s*neg\b"],
+    "AB+": [r"\bAB\s*[+]", r"\bAB\s*positive", r"\bAB\s*pos\b"],
 }
 
 URGENCY_PATTERNS = {
-    "EMERGENCY": [r"\bemergency\b", r"\bজরুরি\b", r"\burgent\b", r"\bimmediately\b", r"\bএখনই\b"],
-    "URGENT":    [r"\burgent\b", r"\btoday\b", r"\bআজ\b", r"\bquick\b"],
-    "PLANNED":   [r"\btomorrow\b", r"\bplanned\b", r"\bscheduled\b", r"\bকাল\b"],
+    "EMERGENCY": [r"\bemergency\b", r"\bimmediately\b", r"এখনই", r"জরুরি"],
+    "URGENT":    [r"\burgent\b", r"\btoday\b", r"আজ\b", r"\bquick\b"],
+    "PLANNED":   [r"\btomorrow\b", r"\bplanned\b", r"\bscheduled\b", r"কাল"],
 }
 
 UNIT_PATTERN = re.compile(r"\b(\d+)\s*(?:unit|bag|ব্যাগ|পিন্ট|pint)s?\b", re.IGNORECASE)

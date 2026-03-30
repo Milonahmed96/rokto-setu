@@ -34,9 +34,8 @@ class ScrubResult:
 
 # Bangladesh mobile: 01X-XXXXXXXX (with optional spaces/dashes)
 BD_PHONE = re.compile(
-    r"\b01[3-9][\s\-]?\d{4}[\s\-]?\d{4}\b"
+    r"01[3-9][\-]?\d{1,2}[\s\-]?\d{3,4}[\s\-]?\d{4}"
 )
-
 # Email addresses
 EMAIL = re.compile(
     r"\b[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Z|a-z]{2,}\b"
