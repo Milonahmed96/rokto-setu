@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 
 from api.database import engine
-from api.routes import auth
+from api.routes import auth, location, requests
 
 app = FastAPI(
     title="Rokto Setu API",
@@ -18,8 +18,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Routers
 app.include_router(auth.router)
+app.include_router(location.router)
+app.include_router(requests.router)
 
 
 @app.get("/")
@@ -27,7 +28,7 @@ async def root():
     return {
         "project": "Rokto Setu — রক্ত সেতু",
         "version": "0.1.0",
-        "status": "running",
+        "status":  "running",
         "message": "Blood Bridge · Bangladesh · AI Engineer Portfolio",
     }
 
@@ -42,6 +43,6 @@ async def health():
         db_status = f"unhealthy: {str(e)}"
 
     return {
-        "status": "healthy",
+        "status":   "healthy",
         "database": db_status,
     }

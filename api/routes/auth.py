@@ -5,10 +5,8 @@ from datetime import datetime, timedelta
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from jose import jwt
-from sqlalchemy import text
-from sqlalchemy.ext.asyncio import AsyncSession
-
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from jose import jwt, JWTError
 from api.database import get_db, settings
 from api.models import RegisterRequest, OTPVerifyRequest, TokenResponse
 
@@ -137,3 +135,30 @@ async def verify_otp(
         access_token=token,
         user_id=user.user_id,
     )
+
+
+security = HTTPBearer()
+
+
+async def get_current_user(
+    credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+) -> dict:
+    """Dependency — validates JWT and returns user payload."""
+    try:
+        payload = jwt.decode(
+            credentials.credentials,
+            settings.secret_key,
+            algorithms=["HS256"],
+        )
+        user_id = payload.get("sub")
+        if not user_id:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token",
+            )
+        return {"user_id": user_id}
+    except JWTError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired token",
+        )
