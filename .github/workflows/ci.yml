@@ -12,7 +12,7 @@ jobs:
 
     services:
       postgres:
-        image: postgis/postgis:16-3.4
+        image: milon96/rokto-db:latest
         env:
           POSTGRES_DB: rokto_db_test
           POSTGRES_USER: rokto_user
@@ -61,11 +61,6 @@ jobs:
 
       - name: Install dependencies
         run: pip install -r requirements.txt
-
-      - name: Install pgvector on CI runner
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y postgresql-16-pgvector
 
       - name: Install pgvector extension on test DB
         run: |
