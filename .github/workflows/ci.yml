@@ -62,7 +62,12 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Install pgvector on test DB
+      - name: Install pgvector on CI runner
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-16-pgvector
+
+      - name: Install pgvector extension on test DB
         run: |
           PGPASSWORD=rokto_pass psql -h localhost -U rokto_user -d rokto_db_test -c "CREATE EXTENSION IF NOT EXISTS vector;"
 
