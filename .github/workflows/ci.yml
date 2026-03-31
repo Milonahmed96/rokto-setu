@@ -71,6 +71,14 @@ jobs:
           PGPASSWORD=rokto_pass psql -h localhost -U rokto_user -d rokto_db_test -f data/migrations/001_initial.sql
           PGPASSWORD=rokto_pass psql -h localhost -U rokto_user -d rokto_db_test -f data/migrations/002_indexes.sql
 
+      - name: Generate synthetic historical data
+        run: python -m data.generate --historical --hist-count 500
+
+      - name: Train forecasting model
+        run: python -m ml.forecasting --train
+        env:
+          ANTHROPIC_API_KEY: sk-ant-test-key-placeholder
+      
       - name: Run tests
         run: pytest tests/ -v --tb=short
 

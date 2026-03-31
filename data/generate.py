@@ -270,17 +270,108 @@ async def generate_donors(count: int = 500) -> list[dict]:
     return donors
 
 
+
+async def generate_historical_requests(count: int = 2000) -> list[dict]:
+    """
+    Generate synthetic historical blood requests with realistic patterns:
+    - Seasonal variation (higher in winter, lower in monsoon)
+    - Geographic clustering around major cities
+    - Urgency distribution (30% emergency, 45% urgent, 25% planned)
+    - Blood group demand matching Bangladesh demographics
+    """
+    import random
+    from datetime import datetime, timedelta
+
+    print(f"\nGenerating {count} historical blood requests...")
+
+    # Blood group demand — rare groups requested MORE proportionally
+    DEMAND_WEIGHTS = {
+        "O+": 30, "A+": 22, "B+": 18, "AB+": 8,
+        "O-": 10, "A-": 6,  "B-": 4,  "AB-": 2,
+    }
+
+    URGENCY_WEIGHTS = {
+        "EMERGENCY": 30,
+        "URGENT":    45,
+        "PLANNED":   25,
+    }
+
+    # Seasonal multiplier by month (Bangladesh: monsoon Jun-Sep = fewer donations)
+    SEASONAL = {
+        1: 1.2, 2: 1.1, 3: 1.0, 4: 0.95,
+        5: 0.9, 6: 0.75, 7: 0.7, 8: 0.7,
+        9: 0.8, 10: 1.0, 11: 1.15, 12: 1.2,
+    }
+
+    requests = []
+    start_date = datetime.now() - timedelta(days=365)
+
+    for i in range(count):
+        # Random date in past 12 months
+        days_ago = random.randint(0, 365)
+        req_date = start_date + timedelta(days=days_ago)
+        month    = req_date.month
+
+        # Apply seasonal weight to urgency
+        seasonal_factor = SEASONAL[month]
+        urgency = random.choices(
+            list(URGENCY_WEIGHTS.keys()),
+            weights=[w * (1.3 if seasonal_factor < 0.85 else 1.0)
+                     for w in URGENCY_WEIGHTS.values()],
+            k=1
+        )[0]
+
+        district = _random_district()
+        blood_group = random.choices(
+            list(DEMAND_WEIGHTS.keys()),
+            weights=list(DEMAND_WEIGHTS.values()),
+            k=1
+        )[0]
+
+        # Was it fulfilled? Rare groups harder to fulfil
+        rare = blood_group in ["O-", "A-", "B-", "AB-"]
+        fulfilled = random.random() < (0.65 if rare else 0.82)
+
+        requests.append({
+            "request_index":  i + 1,
+            "blood_group":    blood_group,
+            "urgency":        urgency,
+            "division_id":    district["division_id"],
+            "division_name":  district["division"],
+            "district_id":    district["id"],
+            "district_name":  district["name"],
+            "month":          month,
+            "day_of_week":    req_date.weekday(),
+            "week_of_year":   req_date.isocalendar()[1],
+            "is_weekend":     req_date.weekday() >= 5,
+            "seasonal_factor": seasonal_factor,
+            "units_needed":   random.choices([1, 2, 3, 4], weights=[50, 30, 15, 5], k=1)[0],
+            "fulfilled":      fulfilled,
+            "created_at":     req_date.strftime("%Y-%m-%dT%H:%M:%SZ"),
+        })
+
+    print(f"✓ Generated {len(requests)} historical requests")
+    return requests
+
 async def main():
-    parser = argparse.ArgumentParser(description="Generate synthetic donor profiles")
-    parser.add_argument("--count",  type=int, default=500, help="Number of donors")
-    parser.add_argument("--output", type=str,
-                        default="data/synthetic/donors.json",
-                        help="Output file path")
+    parser = argparse.ArgumentParser(description="Generate synthetic data")
+    parser.add_argument("--count",  type=int, default=500)
+    parser.add_argument("--output", type=str, default="data/synthetic/donors.json")
+    parser.add_argument("--historical", action="store_true",
+                        help="Generate historical requests instead of donors")
+    parser.add_argument("--hist-count", type=int, default=2000)
     args = parser.parse_args()
 
-    # Ensure output directory exists
     output_path = Path(args.output)
     output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    if args.historical:
+        hist_path = Path("data/synthetic/historical_requests.json")
+        requests = await generate_historical_requests(args.hist_count)
+        with open(hist_path, "w", encoding="utf-8") as f:
+            json.dump(requests, f, ensure_ascii=False, indent=2)
+        print(f"✓ Saved to {hist_path}")
+        return
 
     donors = await generate_donors(args.count)
 
@@ -290,7 +381,6 @@ async def main():
     print(f"\n✓ Generated {len(donors)} donor profiles")
     print(f"✓ Saved to {output_path}")
 
-    # Print summary stats
     blood_counts = {}
     for d in donors:
         bg = d["blood_group"]
