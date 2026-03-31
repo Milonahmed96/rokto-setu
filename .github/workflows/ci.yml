@@ -78,9 +78,12 @@ jobs:
         run: python -m ml.forecasting --train
         env:
           ANTHROPIC_API_KEY: sk-ant-test-key-placeholder
+
+      - name: Train anomaly detection model
+        run: python -m ml.anomaly --train
       
       - name: Run tests
-        run: pytest tests/ -v --tb=short
+        run: pytest tests/test_nlp.py tests/test_forecasting.py tests/test_anomaly.py tests/test_auth.py tests/test_health.py -v --tb=short
 
       - name: Check API imports cleanly
         run: python -c "from api.main import app; print('API imports OK')"

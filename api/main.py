@@ -18,13 +18,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-from api.routes import auth, location, requests, chat, forecast
+from api.routes import auth, location, requests, chat, forecast, anomaly
 
 app.include_router(auth.router)
 app.include_router(location.router)
 app.include_router(requests.router)
 app.include_router(chat.router)
 app.include_router(forecast.router)
+app.include_router(anomaly.router)
 
 
 @app.get("/")
