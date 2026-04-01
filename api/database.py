@@ -10,12 +10,6 @@ class Settings(BaseSettings):
     anthropic_api_key: str
     secret_key: str
     environment: str = "development"
-
-    # Railway provides these directly
-    postgres_host: str = ""
-    postgres_user: str = ""
-    postgres_password: str = ""
-    postgres_db: str = ""
     port: int = 8000
 
     class Config:
