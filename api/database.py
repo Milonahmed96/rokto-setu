@@ -4,12 +4,19 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    database_url: str
+    database_url: str = ""
     local_database_url: str = ""
-    redis_url: str
+    redis_url: str = "redis://localhost:6379"
     anthropic_api_key: str
     secret_key: str
     environment: str = "development"
+
+    # Railway provides these directly
+    postgres_host: str = ""
+    postgres_user: str = ""
+    postgres_password: str = ""
+    postgres_db: str = ""
+    port: int = 8000
 
     class Config:
         env_file = ".env"
